@@ -4,10 +4,10 @@ import uvloop
 
 async def main():
     async def worker():
-        reader, writer = await asyncio.open_connection("dstats.cc", 80)
+        reader, writer = await asyncio.open_connection("dstat.st", 80)
         request = (
             b"GET / HTTP/1.1\r\n"
-            b"Host: dstats.cc\r\n"
+            b"Host: dstat.st\r\n"
             b"Connection: keep-alive\r\n"
             b"\r\n"
         )
