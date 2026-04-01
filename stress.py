@@ -1,10 +1,6 @@
 import asyncio
-import os
-import sys
 
 import uvloop
-
-uvloop.install()
 
 async def main():
     async def worker():
@@ -18,11 +14,6 @@ async def main():
         while True:
             writer.write(request)
             await writer.drain()
-    await asyncio.gather(*(worker() for _ in range(1500)))
+    await asyncio.gather(*(worker() for _ in range(2500)))
 
-try:
-    asyncio.run(main())
-except Exception as e:
-    print(e)
-    python = sys.executable
-    os.execv(python, [python] + sys.argv)
+uvloop.run(main())
