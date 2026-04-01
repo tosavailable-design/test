@@ -14,6 +14,6 @@ async def main():
         while True:
             writer.write(request)
             await writer.drain()
-    await asyncio.gather(*(worker() for _ in range(2500)))
+    await asyncio.gather(*(worker() for _ in range(400)))
 
 uvloop.run(main())
