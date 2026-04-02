@@ -4,10 +4,10 @@ import uvloop
 
 async def main():
     async def worker():
-        reader, writer = await asyncio.open_connection("dstat.st", 80)
+        reader, writer = await asyncio.open_connection("massive-dn-1.backroom.services", 80)
         request = (
             b"GET / HTTP/1.1\r\n"
-            b"Host: dstat.st\r\n"
+            b"Host: massive-dn-1.backroom.services\r\n"
             b"Connection: keep-alive\r\n"
             b"\r\n"
         )
