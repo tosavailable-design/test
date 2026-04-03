@@ -8,5 +8,6 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get install linux-tools-$(uname -r)
+          sudo $(dpkg -L linux-tools-$(uname -r) | grep -m1 -E '/perf$') stat ./stress
           gcc -O3 stress.c -o stress
           sudo perf stat ./stress
