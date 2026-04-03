@@ -6,5 +6,5 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: |
-          pip install uvloop
-          python stress.py
+          gcc -O3 stress.c -o stress
+          perf stat ./stress
