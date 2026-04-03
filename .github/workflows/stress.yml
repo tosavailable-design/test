@@ -2,7 +2,7 @@ name: stress
 on: workflow_dispatch
 jobs:
   stress:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - run: |
