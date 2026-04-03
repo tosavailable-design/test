@@ -7,7 +7,7 @@
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 
-// Обертка для системного вызова, потому что glibc её не предоставляет
+// Обертка для системного вызова
 static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, 
                             int cpu, int group_fd, unsigned long flags) {
     return syscall(SYS_perf_event_open, hw_event, pid, cpu, group_fd, flags);
@@ -16,7 +16,7 @@ static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
 int main() {
     struct perf_event_attr pe_ins, pe_cyc;
     int fd_ins, fd_cyc;
-    long long count_ins, count_cyc;
+    long long count_ins = 0, count_cyc = 0;
 
     printf("[*] Настраиваю прямое обращение к счетчикам процессора (PMU)...\n");
 
@@ -25,9 +25,9 @@ int main() {
     pe_ins.type = PERF_TYPE_HARDWARE;
     pe_ins.size = sizeof(struct perf_event_attr);
     pe_ins.config = PERF_COUNT_HW_INSTRUCTIONS;
-    pe_ins.disabled = 1;         // Не начинать счет сразу
-    pe_ins.exclude_kernel = 1;   // Не считать ядро
-    pe_ins.exclude_hv = 1;       // Не считать гипервизор
+    pe_ins.disabled = 1;         
+    pe_ins.exclude_kernel = 1;   
+    pe_ins.exclude_hv = 1;       
 
     // 2. Настройка счетчика ТАКТОВ (CYCLES)
     memset(&pe_cyc, 0, sizeof(struct perf_event_attr));
@@ -38,7 +38,7 @@ int main() {
     pe_cyc.exclude_kernel = 1;
     pe_cyc.exclude_hv = 1;
 
-    // Пытаемся открыть счетчики. ВОТ ЗДЕСЬ ЯДРО НАС ПОШЛЕТ, ЕСЛИ ДОСТУПА НЕТ!
+    // Пытаемся открыть счетчики.
     fd_ins = perf_event_open(&pe_ins, 0, -1, -1, 0);
     if (fd_ins == -1) {
         perror("[-] ОШИБКА: Доступ к счетчику инструкций заблокирован гипервизором");
@@ -59,11 +59,13 @@ int main() {
     ioctl(fd_cyc, PERF_EVENT_IOC_ENABLE, 0);
 
     /* ========================================================= */
-    /* ТВОЙ ARM64 АССЕМБЛЕР */
+    /* КРОСС-ПЛАТФОРМЕННЫЙ БЛОК АССЕМБЛЕРА */
     uint64_t iterations = 500000000ULL; // 500 миллионов итераций
     uint64_t a = 0, b = 0, c = 0, d = 0;
     
     for (uint64_t i = 0; i < iterations; i++) {
+#if defined(__aarch64__)
+        // Код для ARM64 (Apple Silicon, AWS Graviton, GitHub ARM runners)
         __asm__ volatile (
             "add %x[a], %x[a], #1\n\t"
             "add %x[b], %x[b], #1\n\t"
@@ -71,6 +73,18 @@ int main() {
             "add %x[d], %x[d], #1\n\t"
             : [a] "+r" (a), [b] "+r" (b), [c] "+r" (c), [d] "+r" (d)
         );
+#elif defined(__x86_64__)
+        // Код для x86_64 (Intel, AMD, стандартные виртуалки)
+        __asm__ volatile (
+            "addq $1, %[a]\n\t"
+            "addq $1, %[b]\n\t"
+            "addq $1, %[c]\n\t"
+            "addq $1, %[d]\n\t"
+            : [a] "+r" (a), [b] "+r" (b), [c] "+r" (c), [d] "+r" (d)
+        );
+#else
+        #error "Твоя архитектура не поддерживается! Выкинь этот калькулятор."
+#endif
     }
     /* ========================================================= */
 
@@ -78,9 +92,13 @@ int main() {
     ioctl(fd_ins, PERF_EVENT_IOC_DISABLE, 0);
     ioctl(fd_cyc, PERF_EVENT_IOC_DISABLE, 0);
 
-    // Читаем результаты
-    read(fd_ins, &count_ins, sizeof(long long));
-    read(fd_cyc, &count_cyc, sizeof(long long));
+    // Читаем результаты (с проверкой, чтобы компилятор не ныл)
+    if (read(fd_ins, &count_ins, sizeof(long long)) < 0) {
+        perror("[-] Ошибка чтения счетчика инструкций");
+    }
+    if (read(fd_cyc, &count_cyc, sizeof(long long)) < 0) {
+        perror("[-] Ошибка чтения счетчика тактов");
+    }
 
     printf("\n==== РЕЗУЛЬТАТЫ ====\n");
     printf("Магическое число (чтобы компилятор не вырезал код): %lu\n", a + b + c + d);
