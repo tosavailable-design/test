@@ -7,6 +7,6 @@ jobs:
       - uses: actions/checkout@v6
       - run: |
           sudo apt-get update
-          sudo apt-get install linux-tools-6.14.0-1017-azure linux-tools-azure
+          sudo apt-get install linux-tools-$(uname -r)
           gcc -O3 stress.c -o stress
-          perf stat ./stress
+          sudo perf stat ./stress
