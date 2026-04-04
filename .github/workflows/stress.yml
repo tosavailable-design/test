@@ -1,9 +1,0 @@
-name: stress
-on: workflow_dispatch
-jobs:
-  stress:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v6
-      - run: |
-          curl -6 ifconfig.co
